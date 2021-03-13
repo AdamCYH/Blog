@@ -5,10 +5,12 @@ from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser, AllowAny, SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.group_permissions import IsUserSelf, IsOwnerOrReadOnly
 from api.models import User, Post
-from api.serializers import UserSerializer, UserUpdateSerializer, GroupSerializer, PostSerializer
+from api.serializers import UserSerializer, UserUpdateSerializer, GroupSerializer, PostSerializer, \
+    TokenObtainPairPatchedSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -166,3 +168,13 @@ class PostViewSet(viewsets.ViewSet):
             permission_classes = [IsOwnerOrReadOnly]
 
         return [permission() for permission in permission_classes]
+
+
+class TokenObtainPairPatchedView(TokenObtainPairView):
+    """
+    Takes a set of user credentials and returns an access and refresh JSON web
+    token pair to prove the authentication of those credentials.
+    """
+    serializer_class = TokenObtainPairPatchedSerializer
+
+    token_obtain_pair = TokenObtainPairView.as_view()

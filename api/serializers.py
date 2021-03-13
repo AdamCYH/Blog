@@ -1,6 +1,8 @@
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import Group
+from django.utils import timezone
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import User, Post
 
@@ -65,3 +67,20 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
         read_only_fields = ('view', 'like', 'owner')
+
+
+class TokenObtainPairPatchedSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        refresh = self.get_token(self.user)
+
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        data['is_staff'] = self.user.is_staff
+        data['first_name'] = self.user.first_name
+        data['last_name'] = self.user.last_name
+        data['user_id'] = self.user.user_id
+        self.user.last_login = timezone.now()
+        self.user.save()
+        return data
