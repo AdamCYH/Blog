@@ -31,7 +31,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-        read_only_fields = ('last_login', 'date_joined', 'is_active')
+        read_only_fields = (
+            'last_login', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -53,7 +54,30 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-        read_only_fields = ('last_login', 'date_joined', 'is_active')
+        read_only_fields = (
+            'last_login', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        required=False,
+        help_text='Leave empty if no change needed',
+        style={'input_type': 'password', 'placeholder': 'Password'}
+    )
+    profile_pic = serializers.ImageField(required=False)
+
+    def update(self, instance, validated_data):
+        if validated_data.get('password') is not None:
+            validated_data['password'] = make_password(validated_data.get('password'))
+            return super(UserAdminSerializer, self).update(instance, validated_data)
+        else:
+            return super(UserAdminSerializer, self).update(instance, validated_data)
+
+    class Meta:
+        model = User
+        fields = '__all__'
+        read_only_fields = ('last_login', 'date_joined')
 
 
 class GroupSerializer(serializers.ModelSerializer):

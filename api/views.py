@@ -7,10 +7,10 @@ from rest_framework.permissions import IsAdminUser, AllowAny, SAFE_METHODS, IsAu
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api.group_permissions import IsUserSelf, IsOwnerOrReadOnly
+from api.group_permissions import IsOwnerOrReadOnly, IsUserSelf
 from api.models import User, Post
-from api.serializers import UserSerializer, UserUpdateSerializer, GroupSerializer, PostSerializer, \
-    TokenObtainPairPatchedSerializer
+from api.serializers import GroupSerializer, PostSerializer, \
+    TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 class UserViewSet(viewsets.ViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    serializer_update_class = UserUpdateSerializer
 
     def dispatch(self, request, *args, **kwargs):
         return super(UserViewSet, self).dispatch(request, *args, **kwargs)
@@ -41,7 +40,7 @@ class UserViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = self.serializer_update_class(self.queryset.get(user_id=pk), data=request.data)
+        serializer = self.serializer_class(self.queryset.get(user_id=pk), data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
@@ -62,10 +61,19 @@ class UserViewSet(viewsets.ViewSet):
         """
         if self.action == 'create':
             permission_classes = [AllowAny]
+            self.serializer_class = UserSerializer
         elif self.action == 'list':
             permission_classes = [IsAdminUser]
+            self.serializer_class = UserSerializer
+        elif self.action == 'retrieve':
+            permission_classes = [IsUserSelf]
+            self.serializer_class = UserSerializer
         else:
             permission_classes = [IsAdminUser, IsUserSelf]
+            if IsAdminUser:
+                self.serializer_class = UserAdminSerializer
+            else:
+                self.serializer_class = UserUpdateSerializer
         return [permission() for permission in permission_classes]
 
 
