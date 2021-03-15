@@ -33,9 +33,5 @@ class IsUserSelf(permissions.BasePermission):
 
 
 class IsUserSelfOrAdmin(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.user.is_anonymous:
-            return False
-
     def has_object_permission(self, request, view, obj):
-        return obj.user_id == request.user.user_id or request.user.is_staff
+        return obj.owner == request.user or request.user.is_staff

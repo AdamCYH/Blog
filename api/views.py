@@ -7,10 +7,10 @@ from rest_framework.permissions import IsAdminUser, AllowAny, SAFE_METHODS, IsAu
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api.group_permissions import IsOwnerOrReadOnly, IsUserSelf
-from api.models import User, Post
+from api.group_permissions import IsOwnerOrReadOnly, IsUserSelf, IsUserSelfOrAdmin
+from api.models import User, Post, Image
 from api.serializers import GroupSerializer, PostSerializer, \
-    TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer
+    TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -174,6 +174,57 @@ class PostViewSet(viewsets.ViewSet):
             permission_classes = [IsAuthenticated]
         else:
             permission_classes = [IsOwnerOrReadOnly]
+
+        return [permission() for permission in permission_classes]
+
+
+class ImageViewSet(viewsets.ViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
+
+    def dispatch(self, request, *args, **kwargs):
+        return super(ImageViewSet, self).dispatch(request, *args, **kwargs)
+
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset.all().filter(owner=request.user), many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            image = serializer.save(owner=request.user)
+            image.name = self.request.FILES['image'].name
+            image.save()
+        else:
+            logger.error(serializer.errors)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, pk=None):
+        image = get_object_or_404(self.queryset.all(), pk=pk)
+        serializer = self.serializer_class(image)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        serializer = self.serializer_class(self.queryset.get(image_id=pk), data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        else:
+            logger.error(serializer.errors)
+
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        image = get_object_or_404(self.queryset.all(), pk=pk)
+        image.image.delete()
+        image.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        permission_classes = [IsUserSelfOrAdmin]
 
         return [permission() for permission in permission_classes]
 

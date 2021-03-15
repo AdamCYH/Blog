@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from django.contrib.auth.models import AbstractUser
@@ -26,7 +27,7 @@ class Post(models.Model):
         blank=False,
         null=False,
         on_delete=models.CASCADE,
-        related_name='blogs',
+        related_name='posts',
     )
 
     view = models.BigIntegerField(default=0)
@@ -42,3 +43,30 @@ class Post(models.Model):
 
     class Meta:
         db_table = 'post'
+
+
+def get_image_upload_path(instance, filename):
+    ext = filename.split('.')[1]
+    return os.path.join(
+        "user_%s" % instance.owner.user_id, "{}.{}".format(uuid.uuid4().hex, ext))
+
+
+class Image(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    image = models.ImageField(upload_to=get_image_upload_path)
+    name = models.CharField(max_length=100)
+    is_public = models.BooleanField(default=True)
+    owner = models.ForeignKey(
+        User,
+        blank=False,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name='images',
+    )
+    createdTimestamp = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )
+
+    class Meta:
+        db_table = 'image'
