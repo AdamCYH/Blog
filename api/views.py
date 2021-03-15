@@ -150,7 +150,7 @@ class PostViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = self.serializer_class(self.queryset.get(post_id=pk), data=request.data)
+        serializer = self.serializer_class(self.queryset.get(id=pk), data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
