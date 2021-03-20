@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAdminUser, AllowAny, SAFE_METHODS, IsAu
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api.group_permissions import IsOwnerOrReadOnly, IsUserSelf, IsUserSelfOrAdmin
+from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin, ModelPermissions
 from api.models import User, Post, Image
 from api.serializers import GroupSerializer, PostSerializer, \
     TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer
@@ -66,14 +66,15 @@ class UserViewSet(viewsets.ViewSet):
             permission_classes = [IsAdminUser]
             self.serializer_class = UserSerializer
         elif self.action == 'retrieve':
-            permission_classes = [IsUserSelf]
+            permission_classes = [IsUserSelfOrAdmin]
             self.serializer_class = UserSerializer
         else:
-            permission_classes = [IsAdminUser, IsUserSelf]
+            permission_classes = [IsUserSelfOrAdmin]
             if IsAdminUser:
                 self.serializer_class = UserAdminSerializer
             else:
                 self.serializer_class = UserUpdateSerializer
+
         return [permission() for permission in permission_classes]
 
 
@@ -102,7 +103,7 @@ class GroupViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = self.serializer_class(self.queryset.get(group_id=pk), data=request.data)
+        serializer = self.serializer_class(self.queryset.get(id=pk), data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
