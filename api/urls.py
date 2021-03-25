@@ -5,6 +5,6 @@ from api.views import UserViewSet, GroupViewSet, PostViewSet, ImageViewSet, Cate
 api_router = SimpleRouter()
 api_router.register(r'user', UserViewSet)
 api_router.register(r'group', GroupViewSet)
-api_router.register(r'post', PostViewSet)
+api_router.register(r'post', PostViewSet, basename='post')
 api_router.register(r'category', CategoryViewSet)
 api_router.register(r'image', ImageViewSet)

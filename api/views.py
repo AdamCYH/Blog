@@ -175,14 +175,26 @@ class CategoryViewSet(viewsets.ViewSet):
 
 
 class PostViewSet(viewsets.ViewSet):
-    queryset = Post.objects.all()
     serializer_class = PostSerializer
 
     def dispatch(self, request, *args, **kwargs):
         return super(PostViewSet, self).dispatch(request, *args, **kwargs)
 
+    def get_queryset(self):
+        queryset = Post.objects.all()
+        author = self.request.query_params.get('author', None)
+        title = self.request.query_params.get('title', None)
+        orderBy = self.request.query_params.get('orderBy', None)
+        if author:
+            queryset = queryset.filter(owner=author)
+        if title:
+            queryset = queryset.filter(title=title)
+        if orderBy:
+            queryset = queryset.order_by(orderBy)
+        return queryset
+
     def list(self, request):
-        serializer = self.serializer_class(self.queryset.all(), many=True)
+        serializer = self.serializer_class(self.get_queryset().all(), many=True)
         return Response(serializer.data)
 
     def create(self, request):
@@ -194,12 +206,12 @@ class PostViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
-        post = get_object_or_404(self.queryset.all(), pk=pk)
+        post = get_object_or_404(self.get_queryset().all(), pk=pk)
         serializer = self.serializer_class(post)
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = self.serializer_class(self.queryset.get(id=pk), data=request.data)
+        serializer = self.serializer_class(self.get_queryset().get(id=pk), data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
@@ -208,7 +220,7 @@ class PostViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):
-        post = get_object_or_404(self.queryset.all(), pk=pk)
+        post = get_object_or_404(self.get_queryset().all(), pk=pk)
         post.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
