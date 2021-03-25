@@ -184,13 +184,13 @@ class PostViewSet(viewsets.ViewSet):
         queryset = Post.objects.all()
         author = self.request.query_params.get('author', None)
         title = self.request.query_params.get('title', None)
-        orderBy = self.request.query_params.get('orderBy', None)
+        order_by = self.request.query_params.get('orderBy', None)
         if author:
             queryset = queryset.filter(owner=author)
         if title:
             queryset = queryset.filter(title=title)
-        if orderBy:
-            queryset = queryset.order_by(orderBy)
+        if order_by:
+            queryset = queryset.order_by(order_by)
         return queryset
 
     def list(self, request):
@@ -207,6 +207,9 @@ class PostViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         post = get_object_or_404(self.get_queryset().all(), pk=pk)
+        if post.owner != self.request.user:
+            post.view = post.view + 1
+            post.save()
         serializer = self.serializer_class(post)
         return Response(serializer.data)
 
