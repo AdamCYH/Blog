@@ -3,7 +3,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from api.models import User, Post, Image, Group, UserGroup
+from api.models import User, Post, Image, Group, UserGroup, Category
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -91,6 +91,13 @@ class UserAdminSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
         read_only_fields = ('last_login', 'date_joined', "user_permissions")
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+        read_only_fields = ('createdBy',)
 
 
 class PostSerializer(serializers.ModelSerializer):

@@ -7,9 +7,10 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin
-from api.models import User, Post, Image, Group
+from api.models import User, Post, Image, Group, Category
 from api.serializers import GroupSerializer, PostSerializer, \
-    TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer
+    TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer, \
+    CategorySerializer
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,54 @@ class GroupViewSet(viewsets.ViewSet):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+        else:
+            logger.error(serializer.errors)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, pk=None):
+        group = get_object_or_404(self.queryset.all(), pk=pk)
+        serializer = self.serializer_class(group)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        serializer = self.serializer_class(self.queryset.get(id=pk), data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+        else:
+            logger.error(serializer.errors)
+
+        return Response(serializer.data)
+
+    def destroy(self, request, pk=None):
+        group = get_object_or_404(self.queryset.all(), pk=pk)
+        group.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        permission_classes = [IsAdminUser]
+
+        return [permission() for permission in permission_classes]
+
+
+class CategoryViewSet(viewsets.ViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+    def dispatch(self, request, *args, **kwargs):
+        return super(CategoryViewSet, self).dispatch(request, *args, **kwargs)
+
+    def list(self, request):
+        serializer = self.serializer_class(self.queryset.all(), many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(createdBy=request.user)
         else:
             logger.error(serializer.errors)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

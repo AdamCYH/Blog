@@ -32,14 +32,20 @@ class User(AbstractUser):
     def get_absolute_url(self):
         return reverse('user', args=[str(self.id)])
 
+    class Meta:
+        db_table = 'user'
+
 
 class UserGroup(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_group")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name="user_group")
+
+    class Meta:
+        db_table = 'user_group'
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(primary_key=True, max_length=100)
     createdBy = models.ForeignKey(
         User,
         blank=True,
