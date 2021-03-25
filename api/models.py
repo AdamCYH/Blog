@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
 
+from api.utils import random_string
+
 
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email', 'password']
@@ -19,8 +21,23 @@ class User(AbstractUser):
         return reverse('user', args=[str(self.id)])
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    createdBy = models.ForeignKey(
+        User,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='categories',
+    )
+
+    class Meta:
+        db_table = 'category'
+
+
 class Post(models.Model):
     title = models.CharField(max_length=100)
+    description = models.CharField(max_length=500, null=True)
     body = models.TextField()
     owner = models.ForeignKey(
         User,
@@ -29,6 +46,12 @@ class Post(models.Model):
         on_delete=models.CASCADE,
         related_name='posts',
     )
+    category = models.ForeignKey(
+        Category,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="posts")
 
     view = models.BigIntegerField(default=0)
     is_public = models.BooleanField(default=False)
@@ -45,10 +68,41 @@ class Post(models.Model):
         db_table = 'post'
 
 
-def get_image_upload_path(instance, filename):
+def get_video_upload_path(instance, filename):
+    name = filename.split('.')[0]
     ext = filename.split('.')[1]
     return os.path.join(
-        "user_%s" % instance.owner.user_id, "{}.{}".format(uuid.uuid4().hex, ext))
+        "user_%s" % instance.owner.user_id, "videos", "{}_{}.{}".format(name, random_string(5), ext))
+
+
+class VideoPost(models.Model):
+    post = models.OneToOneField(Post, related_name='video_post', on_delete=models.CASCADE, primary_key=True)
+    video = models.FileField(upload_to=get_video_upload_path)
+
+    class Meta:
+        db_table = 'videoPost'
+
+
+def get_audio_upload_path(instance, filename):
+    name = filename.split('.')[0]
+    ext = filename.split('.')[1]
+    return os.path.join(
+        "user_%s" % instance.owner.user_id, "audios", "{}_{}.{}".format(name, random_string(5), ext))
+
+
+class AudioPost(models.Model):
+    post = models.OneToOneField(Post, related_name='audio_post', on_delete=models.CASCADE, primary_key=True)
+    video = models.FileField(upload_to=get_audio_upload_path)
+
+    class Meta:
+        db_table = 'audioPost'
+
+
+def get_image_upload_path(instance, filename):
+    name = filename.split('.')[0]
+    ext = filename.split('.')[1]
+    return os.path.join(
+        "user_%s" % instance.owner.user_id, "images", "{}_{}.{}".format(name, random_string(5), ext))
 
 
 class Image(models.Model):
