@@ -35,10 +35,27 @@ class Category(models.Model):
         db_table = 'category'
 
 
+def get_video_upload_path(instance, filename):
+    name = filename.split('.')[0]
+    ext = filename.split('.')[1]
+    return os.path.join(
+        "user_%s" % instance.owner.user_id, "videos", "{}_{}.{}".format(name, random_string(5), ext))
+
+
+def get_audio_upload_path(instance, filename):
+    name = filename.split('.')[0]
+    ext = filename.split('.')[1]
+    return os.path.join(
+        "user_%s" % instance.owner.user_id, "audios", "{}_{}.{}".format(name, random_string(5), ext))
+
+
 class Post(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=500, null=True)
     body = models.TextField()
+    video = models.FileField(upload_to=get_video_upload_path)
+    audio = models.FileField(upload_to=get_audio_upload_path)
+
     owner = models.ForeignKey(
         User,
         blank=False,
@@ -66,36 +83,6 @@ class Post(models.Model):
 
     class Meta:
         db_table = 'post'
-
-
-def get_video_upload_path(instance, filename):
-    name = filename.split('.')[0]
-    ext = filename.split('.')[1]
-    return os.path.join(
-        "user_%s" % instance.owner.user_id, "videos", "{}_{}.{}".format(name, random_string(5), ext))
-
-
-class VideoPost(models.Model):
-    post = models.OneToOneField(Post, related_name='video_post', on_delete=models.CASCADE, primary_key=True)
-    video = models.FileField(upload_to=get_video_upload_path)
-
-    class Meta:
-        db_table = 'videoPost'
-
-
-def get_audio_upload_path(instance, filename):
-    name = filename.split('.')[0]
-    ext = filename.split('.')[1]
-    return os.path.join(
-        "user_%s" % instance.owner.user_id, "audios", "{}_{}.{}".format(name, random_string(5), ext))
-
-
-class AudioPost(models.Model):
-    post = models.OneToOneField(Post, related_name='audio_post', on_delete=models.CASCADE, primary_key=True)
-    video = models.FileField(upload_to=get_audio_upload_path)
-
-    class Meta:
-        db_table = 'audioPost'
 
 
 def get_image_upload_path(instance, filename):
