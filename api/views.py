@@ -186,9 +186,9 @@ class PostViewSet(viewsets.ViewSet):
         title = self.request.query_params.get('title', None)
         order_by = self.request.query_params.get('orderBy', None)
         if author:
-            queryset = queryset.filter(owner=author)
+            queryset = queryset.filter(owner__username__contains=author)
         if title:
-            queryset = queryset.filter(title=title)
+            queryset = queryset.filter(title__contains=title)
         if order_by:
             queryset = queryset.order_by(order_by)
         return queryset
