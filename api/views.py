@@ -1,14 +1,13 @@
 import logging
 
-from django.contrib.auth.models import Group
 from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser, AllowAny, SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin, ModelPermissions
-from api.models import User, Post, Image
+from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin
+from api.models import User, Post, Image, Group
 from api.serializers import GroupSerializer, PostSerializer, \
     TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer
 

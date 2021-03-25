@@ -1,10 +1,21 @@
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import Group
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from api.models import User, Post, Image
+from api.models import User, Post, Image, Group, UserGroup
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = '__all__'
+
+
+class UserGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserGroup
+        fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -59,6 +70,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserAdminSerializer(serializers.ModelSerializer):
+    groups = UserGroupSerializer(many=True, required=False)
+
     password = serializers.CharField(
         write_only=True,
         required=False,
@@ -77,13 +90,7 @@ class UserAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-        read_only_fields = ('last_login', 'date_joined')
-
-
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = '__all__'
+        read_only_fields = ('last_login', 'date_joined', "user_permissions")
 
 
 class PostSerializer(serializers.ModelSerializer):

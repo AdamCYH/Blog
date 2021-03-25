@@ -8,17 +8,34 @@ from django.urls import reverse
 from api.utils import random_string
 
 
+class Group(models.Model):
+    name = models.CharField(primary_key=True, max_length=150)
+
+    class Meta:
+        db_table = 'group'
+
+
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email', 'password']
     profile_pic = models.ImageField(default='default_profile.jpeg')  # set up default pic
     user_id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False)
+    groups = models.ManyToManyField(
+        Group,
+        blank=True,
+        through='UserGroup',
+    )
 
     def __str__(self):
         return self.username
 
     def get_absolute_url(self):
         return reverse('user', args=[str(self.id)])
+
+
+class UserGroup(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
 
 
 class Category(models.Model):
@@ -53,8 +70,8 @@ class Post(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=500, null=True)
     body = models.TextField()
-    video = models.FileField(upload_to=get_video_upload_path)
-    audio = models.FileField(upload_to=get_audio_upload_path)
+    video = models.FileField(upload_to=get_video_upload_path, null=True)
+    audio = models.FileField(upload_to=get_audio_upload_path, null=True)
 
     owner = models.ForeignKey(
         User,
