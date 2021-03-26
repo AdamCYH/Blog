@@ -10,8 +10,8 @@ logger = logging.getLogger('django_test')
 logger.info('test_log')
 
 user_base_url = '/api/user/'
-admin_username = 'admin'
-admin_password = 'admin'
+fake_admin_username = 'fake-admin'
+fake_admin_password = 'fake-admin'
 
 
 class UserTests(APITestCase):
@@ -41,7 +41,7 @@ class UserTests(APITestCase):
         self.create_fake_users()
 
         # Act
-        self.client.login(username=admin_username, password=admin_password)
+        self.client.login(username=fake_admin_username, password=fake_admin_password)
         actual = self.client.get(user_base_url, format='json')
 
         # assert
@@ -67,7 +67,7 @@ class UserTests(APITestCase):
 
     @staticmethod
     def create_fake_admin_user():
-        User.objects.create_superuser(username=admin_username, password=admin_password)
+        User.objects.create_superuser(username=fake_admin_username, password=fake_admin_password)
 
     @staticmethod
     def create_fake_users():

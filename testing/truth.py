@@ -25,9 +25,6 @@ def assert_that_ignore_fields(test_case, actual, expected, ignored_fields=None, 
     _deep_remove_fields(actual_json, ignored_fields)
     _deep_remove_fields(expected_json, ignored_fields)
 
-    print(json.dumps(actual_json, sort_keys=ignore_order))
-    print(json.dumps(expected_json, sort_keys=ignore_order))
-
     TestCase.assertEqual(test_case, first=len(actual_json), second=len(expected_json))
     TestCase.assertEqual(test_case,
                          first=json.dumps(actual_json, sort_keys=ignore_order),
