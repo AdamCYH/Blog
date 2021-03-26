@@ -53,6 +53,7 @@ class UserViewSet(viewsets.ViewSet):
 
     def destroy(self, request, pk=None):
         user = get_object_or_404(self.queryset.all(), pk=pk)
+        self.check_object_permissions(self.request, user)
         user.is_active = False
         user.save()
 
