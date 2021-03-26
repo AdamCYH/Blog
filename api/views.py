@@ -30,26 +30,28 @@ class UserViewSet(viewsets.ViewSet):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+        # TODO(adam): do we raise exception in else branch or in is_valid?
         else:
             logger.error(serializer.errors)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk):
         user = get_object_or_404(self.queryset.all(), pk=pk)
         serializer = self.serializer_class(user)
         return Response(serializer.data)
 
-    def update(self, request, pk=None):
+    def update(self, request, pk):
         user = get_object_or_404(self.queryset, pk=pk)
         self.check_object_permissions(self.request, user)
 
         serializer = self.serializer_class(user, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+        # TODO(adam): do we raise exception in else branch or in is_valid?
         else:
             logger.error(serializer.errors)
 
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, pk=None):
         user = get_object_or_404(self.queryset.all(), pk=pk)
@@ -189,6 +191,7 @@ class PostViewSet(viewsets.ViewSet):
         return super(PostViewSet, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
+        # TODO(yawen): figure out better ways to rewrite.
         queryset = Post.objects.all()
         author = self.request.query_params.get('author', None)
         title = self.request.query_params.get('title', None)

@@ -46,12 +46,13 @@ class IsUserSelf(permissions.BasePermission):
 
         return obj.user_id == request.user.user_id
 
-
+# TODO:
 class IsUserSelfOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
+        # TODO(Adam): match on obj and separately handle the logic for user and blog.
         if request.user.is_staff or request.user.is_superuser:
             return True
         if obj.user_id:

@@ -1,11 +1,10 @@
-import os
 import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
 
-from api.utils import random_string
+from api.utils import get_video_upload_path, get_audio_upload_path, get_image_upload_path
 
 
 class Group(models.Model):
@@ -58,20 +57,6 @@ class Category(models.Model):
         db_table = 'category'
 
 
-def get_video_upload_path(instance, filename):
-    name = filename.split('.')[0]
-    ext = filename.split('.')[1]
-    return os.path.join(
-        "user_%s" % instance.owner.user_id, "videos", "{}_{}.{}".format(name, random_string(5), ext))
-
-
-def get_audio_upload_path(instance, filename):
-    name = filename.split('.')[0]
-    ext = filename.split('.')[1]
-    return os.path.join(
-        "user_%s" % instance.owner.user_id, "audios", "{}_{}.{}".format(name, random_string(5), ext))
-
-
 class Post(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=500, null=True)
@@ -106,13 +91,6 @@ class Post(models.Model):
 
     class Meta:
         db_table = 'post'
-
-
-def get_image_upload_path(instance, filename):
-    name = filename.split('.')[0]
-    ext = filename.split('.')[1]
-    return os.path.join(
-        "user_%s" % instance.owner.user_id, "images", "{}_{}.{}".format(name, random_string(5), ext))
 
 
 class Image(models.Model):

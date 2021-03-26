@@ -15,6 +15,8 @@ user_base_url = '/api/user/'
 
 class UserTests(APITestCase):
 
+    # TODO(adam): Add test cases on changing user password.
+
     def test_createUser_anonymous_shouldCreateUser(self):
         # Arrange
         data = {'username': 'username',
