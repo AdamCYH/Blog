@@ -9,7 +9,7 @@ from api.utils import random_string
 
 
 class Group(models.Model):
-    name = models.CharField(primary_key=True, max_length=150)
+    name = models.CharField(unique=True, max_length=150)
 
     class Meta:
         db_table = 'group'

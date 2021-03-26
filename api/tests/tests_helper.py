@@ -1,6 +1,6 @@
 from django.contrib.auth.hashers import make_password
 
-from api.models import User
+from api.models import User, Group
 
 fake_admin_username = 'fake-admin'
 fake_admin_password = 'fake-admin'
@@ -30,3 +30,9 @@ def create_fake_users():
                                 first_name='fname-2',
                                 last_name='lname-2')
     return user1, user2
+
+
+def create_fake_groups():
+    group1 = Group.objects.create(name='group-1')
+    group2 = Group.objects.create(name='group-2')
+    return group1, group2

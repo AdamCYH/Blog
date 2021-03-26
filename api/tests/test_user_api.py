@@ -15,7 +15,7 @@ user_base_url = '/api/user/'
 
 class UserTests(APITestCase):
 
-    def test_create_user__should_create_user(self):
+    def test_createUser_anonymous_shouldCreateUser(self):
         # Arrange
         data = {'username': 'username',
                 'password': 'password',
@@ -34,7 +34,7 @@ class UserTests(APITestCase):
         self.assertEqual(User.objects.get().first_name, 'fname')
         self.assertEqual(User.objects.get().last_name, 'lname')
 
-    def test_list_user__admin__should_return_3(self):
+    def test_listUser_admin_shouldReturn3Users(self):
         # Arrange
         tests_helper.create_fake_admin_user()
         tests_helper.create_fake_users()
@@ -63,7 +63,7 @@ class UserTests(APITestCase):
                                         ['user_id', 'date_joined', 'last_login'],
                                         ignore_order=True)
 
-    def test_list_user__anonymous__should_return_unauthorized(self):
+    def test_listUser_Anonymous_shouldReturnUnauthorized(self):
         # Arrange
         tests_helper.create_fake_users()
 
@@ -73,7 +73,7 @@ class UserTests(APITestCase):
         # assert
         self.assertEqual(actual.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_list_user__normal_user__should_return_unauthorized(self):
+    def test_listUser_loggedInUser_shouldReturnUnauthorized(self):
         # Arrange
         tests_helper.create_fake_users()
 
@@ -84,7 +84,7 @@ class UserTests(APITestCase):
         # assert
         self.assertEqual(actual.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_retrieve_user__logged_in_user__should_retrieve_any_user(self):
+    def test_retrieveUser_loggedInUser_shouldRetrieveUser(self):
         # Arrange
         tests_helper.create_fake_admin_user()
         user1, user2 = tests_helper.create_fake_users()
@@ -92,6 +92,7 @@ class UserTests(APITestCase):
         # Act
         tests_helper.login_as_user_1(self)
         actual = self.client.get(user_base_url + str(user2.user_id) + "/", format='json')
+
         # Assert
         expected = {"user_id": str(user2.user_id), "profile_pic": "/media/default_profile.jpeg",
                     "username": "user-2", "email": "user-2@gmail.com", "last_login": "#####", "is_superuser": False,
@@ -105,7 +106,7 @@ class UserTests(APITestCase):
                                         ['date_joined', 'last_login'],
                                         ignore_order=True)
 
-    def test_retrieve_user__anonymous__should_return_unauthorized(self):
+    def test_retrieveUser_anonymous_shouldReturnUnauthorized(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
 
@@ -115,34 +116,34 @@ class UserTests(APITestCase):
         # assert
         self.assertEqual(actual.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_update_user__self__should_update_user(self):
+    def test_updateUser_self_shouldUpdateUser(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
-
-        # Act
-        tests_helper.login_as_user_1(self)
         request_data = {"username": user1.username,
                         "email": "updated@gmail.com",
                         "first_name": user1.first_name,
                         "last_name": user1.last_name}
+
+        # Act
+        tests_helper.login_as_user_1(self)
         actual = self.client.put(user_base_url + str(user1.user_id) + "/", data=request_data, format='json')
 
         # assert
         self.assertEqual(actual.status_code, status.HTTP_200_OK)
         self.assertEqual(User.objects.get(user_id=user1.user_id).email, "updated@gmail.com")
 
-    def test_update_user__self__should_ignore_admin_fields(self):
+    def test_updateUser_self_shouldIgnoreAdminFields(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
-
-        # Act
-        tests_helper.login_as_user_1(self)
         request_data = {"username": user1.username,
                         "email": user1.email,
                         "first_name": user1.first_name,
                         "last_name": user1.last_name,
                         "is_superuser": True,
                         "is_active": False}
+
+        # Act
+        tests_helper.login_as_user_1(self)
         actual = self.client.put(user_base_url + str(user1.user_id) + "/", data=request_data, format='json')
 
         # assert
@@ -150,19 +151,19 @@ class UserTests(APITestCase):
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_superuser, False)
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_active, True)
 
-    def test_update_user__admin__should_update_everything(self):
+    def test_updateUser_admin_shouldUpdateEverything(self):
         # Arrange
         tests_helper.create_fake_admin_user()
         user1, user2 = tests_helper.create_fake_users()
-
-        # Act
-        tests_helper.login_as_admin(self)
         request_data = {"username": user1.username,
                         "email": user1.email,
                         "first_name": user1.first_name,
                         "last_name": user1.last_name,
                         "is_superuser": True,
                         "is_active": False}
+
+        # Act
+        tests_helper.login_as_admin(self)
         actual = self.client.put(user_base_url + str(user1.user_id) + "/", data=request_data, format='json')
 
         # assert
@@ -170,30 +171,30 @@ class UserTests(APITestCase):
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_superuser, True)
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_active, False)
 
-    def test_update_user__logged_in_user__should_not_update_other_user(self):
+    def test_updateUser_loggedInUser_shouldNotUpdateOtherUser(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
+        request_data = {"username": ""}
 
         # Act
         tests_helper.login_as_user_1(self)
-        request_data = {"username": ""}
         actual = self.client.put(user_base_url + str(user2.user_id) + "/", data=request_data, format='json')
 
         # assert
         self.assertEqual(actual.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_update_user__anonymous__should_return_unauthorized(self):
+    def test_updateUser_anonymous_shouldReturnUnauthorized(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
+        request_data = {"username": ""}
 
         # Act
-        request_data = {"username": ""}
         actual = self.client.put(user_base_url + str(user1.user_id) + "/", data=request_data, format='json')
 
         # assert
         self.assertEqual(actual.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_delete_user__self__should_mark_inactive(self):
+    def test_deleteUser_self_shouldMarkInactive(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
 
@@ -205,7 +206,7 @@ class UserTests(APITestCase):
         self.assertEqual(actual.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_active, False)
 
-    def test_delete_user__admin__should_mark_inactive(self):
+    def test_deleteUser_admin_shouldMarkInactive(self):
         # Arrange
         tests_helper.create_fake_admin_user()
         user1, user2 = tests_helper.create_fake_users()
@@ -218,7 +219,7 @@ class UserTests(APITestCase):
         self.assertEqual(actual.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_active, False)
 
-    def test_delete_user__logged_in_user__should_not_delete_other_user(self):
+    def test_deleteUser_loggedInUser_shouldNotDeleteOtherUser(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
 
@@ -229,12 +230,12 @@ class UserTests(APITestCase):
         # assert
         self.assertEqual(actual.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_delete_user__anonymous__should_return_unauthorized(self):
+    def test_deleteUser_anonymous_shouldReturnUnauthorized(self):
         # Arrange
         user1, user2 = tests_helper.create_fake_users()
+        request_data = {"username": ""}
 
         # Act
-        request_data = {"username": ""}
         actual = self.client.put(user_base_url + str(user1.user_id) + "/", data=request_data, format='json')
 
         # assert
