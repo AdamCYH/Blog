@@ -168,6 +168,18 @@ class UserTests(APITestCase):
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_superuser, True)
         self.assertEqual(User.objects.get(user_id=user1.user_id).is_active, False)
 
+    def test_update_user__logged_in_user__should_not_update_other_user(self):
+        # Arrange
+        user1, user2 = self.create_fake_users()
+
+        # Act
+        self.client.login(username="user-1", password="user-1")
+        request_data = {"username": ""}
+        actual = self.client.put(user_base_url + str(user2.user_id) + "/", data=request_data, format='json')
+
+        # assert
+        self.assertEqual(actual.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_update_user__anonymous__should_return_unauthorized(self):
         # Arrange
         user1, user2 = self.create_fake_users()

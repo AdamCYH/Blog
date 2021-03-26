@@ -40,7 +40,10 @@ class UserViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = self.serializer_class(self.queryset.get(user_id=pk), data=request.data)
+        user = get_object_or_404(self.queryset, pk=pk)
+        self.check_object_permissions(self.request, user)
+
+        serializer = self.serializer_class(user, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
