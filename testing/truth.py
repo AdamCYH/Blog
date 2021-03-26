@@ -19,16 +19,19 @@ def assert_that_ignore_fields(test_case, actual, expected, ignored_fields=None, 
     """
     Asserts http response with expected json string with ignored fields
     """
-    actual_json = json.loads(actual.content)
-    expected_json = json.loads(expected)
+    if ignored_fields is None:
+        ignored_fields = []
 
-    _deep_remove_fields(actual_json, ignored_fields)
-    _deep_remove_fields(expected_json, ignored_fields)
+    actual = actual.data
+    expected = expected
 
-    TestCase.assertEqual(test_case, first=len(actual_json), second=len(expected_json))
+    _deep_remove_fields(actual, ignored_fields)
+    _deep_remove_fields(expected, ignored_fields)
+
+    TestCase.assertEqual(test_case, first=len(actual), second=len(expected))
     TestCase.assertEqual(test_case,
-                         first=json.dumps(actual_json, sort_keys=ignore_order),
-                         second=json.dumps(expected_json, sort_keys=ignore_order))
+                         first=json.dumps(actual, sort_keys=ignore_order),
+                         second=json.dumps(expected, sort_keys=ignore_order))
 
 
 def _deep_remove_fields(source, ignored_fields):

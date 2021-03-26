@@ -70,7 +70,7 @@ class UserViewSet(viewsets.ViewSet):
             self.serializer_class = UserSerializer
         else:
             permission_classes = [IsUserSelfOrAdmin]
-            if IsAdminUser:
+            if self.request.user and self.request.user.is_staff:
                 self.serializer_class = UserAdminSerializer
             else:
                 self.serializer_class = UserUpdateSerializer

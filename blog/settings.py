@@ -131,7 +131,6 @@ LOGGING = {
         },
     },
     'loggers': {
-
         'django_test': {
             'handlers': ['console'],
             'level': 'DEBUG',
