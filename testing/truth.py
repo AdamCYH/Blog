@@ -6,13 +6,13 @@ def assert_that(test_case, actual, expected, ignore_order=False):
     """
     Asserts http response with expected json string.
     """
-    actual_json = json.loads(actual.content)
-    expected_json = json.loads(expected)
+    actual = actual.data
+    expected = expected
 
-    TestCase.assertEqual(test_case, first=len(actual_json), second=len(expected_json))
+    TestCase.assertEqual(test_case, first=len(actual), second=len(expected))
     TestCase.assertEqual(test_case,
-                         first=json.dumps(actual_json, sort_keys=ignore_order),
-                         second=json.dumps(expected_json, sort_keys=ignore_order))
+                         first=json.dumps(actual, sort_keys=ignore_order),
+                         second=json.dumps(expected, sort_keys=ignore_order))
 
 
 def assert_that_ignore_fields(test_case, actual, expected, ignored_fields=None, ignore_order=False):

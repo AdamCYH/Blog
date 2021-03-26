@@ -102,12 +102,13 @@ class GroupViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
-        group = get_object_or_404(self.queryset.all(), pk=pk)
+        group = get_object_or_404(self.queryset.all(), name=pk)
         serializer = self.serializer_class(group)
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = self.serializer_class(self.queryset.get(id=pk), data=request.data)
+        group = get_object_or_404(self.queryset.all(), name=pk)
+        serializer = self.serializer_class(group, data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
@@ -116,7 +117,7 @@ class GroupViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):
-        group = get_object_or_404(self.queryset.all(), pk=pk)
+        group = get_object_or_404(self.queryset.all(), name=pk)
         group.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -125,7 +126,10 @@ class GroupViewSet(viewsets.ViewSet):
         """
         Instantiates and returns the list of permissions that this view requires.
         """
-        permission_classes = [IsAdminUser]
+        if self.request.method in SAFE_METHODS:
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAdminUser]
 
         return [permission() for permission in permission_classes]
 
