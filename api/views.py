@@ -184,11 +184,14 @@ class PostViewSet(viewsets.ViewSet):
         queryset = Post.objects.all()
         author = self.request.query_params.get('author', None)
         title = self.request.query_params.get('title', None)
+        category = self.request.query_params.get('category', None)
         order_by = self.request.query_params.get('orderBy', None)
         if author:
             queryset = queryset.filter(owner__username__contains=author)
         if title:
             queryset = queryset.filter(title__contains=title)
+        if category:
+            queryset = queryset.filter(category=category)
         if order_by:
             queryset = queryset.order_by(order_by)
         return queryset
