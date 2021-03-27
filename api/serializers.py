@@ -20,9 +20,7 @@ class UserGroupSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile_pic = serializers.ImageField(required=False)
-    username = serializers.CharField(
-        required=True,
-    )
+    username = serializers.CharField(required=True)
 
     password = serializers.CharField(
         write_only=True,
@@ -39,6 +37,12 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data.get('password'))
         return super(UserSerializer, self).create(validated_data)
 
+    def update(self, instance, validated_data):
+        if validated_data.get('password') is not None:
+            validated_data['password'] = make_password(validated_data.get('password'))
+
+        return super(UserSerializer, self).update(instance, validated_data)
+
     class Meta:
         model = User
         fields = '__all__'
@@ -46,30 +50,24 @@ class UserSerializer(serializers.ModelSerializer):
             'last_login', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
 
 
-class UserUpdateSerializer(serializers.ModelSerializer):
+class UserUpdateSerializer(UserSerializer):
+    username = serializers.CharField(read_only=True)
     password = serializers.CharField(
         write_only=True,
         required=False,
         help_text='Leave empty if no change needed',
         style={'input_type': 'password', 'placeholder': 'Password'}
     )
-    profile_pic = serializers.ImageField(required=False)
-
-    def update(self, instance, validated_data):
-        if validated_data.get('password') is not None:
-            validated_data['password'] = make_password(validated_data.get('password'))
-            return super(UserUpdateSerializer, self).update(instance, validated_data)
-        else:
-            return super(UserUpdateSerializer, self).update(instance, validated_data)
 
     class Meta:
         model = User
         fields = '__all__'
         read_only_fields = (
-            'last_login', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
+            'username', 'last_login', 'date_joined', 'is_active', 'is_staff', 'is_superuser', 'groups',
+            'user_permissions')
 
 
-class UserAdminSerializer(serializers.ModelSerializer):
+class UserAdminSerializer(UserSerializer):
     groups = UserGroupSerializer(many=True, required=False)
 
     password = serializers.CharField(
@@ -78,14 +76,6 @@ class UserAdminSerializer(serializers.ModelSerializer):
         help_text='Leave empty if no change needed',
         style={'input_type': 'password', 'placeholder': 'Password'}
     )
-    profile_pic = serializers.ImageField(required=False)
-
-    def update(self, instance, validated_data):
-        if validated_data.get('password') is not None:
-            validated_data['password'] = make_password(validated_data.get('password'))
-            return super(UserAdminSerializer, self).update(instance, validated_data)
-        else:
-            return super(UserAdminSerializer, self).update(instance, validated_data)
 
     class Meta:
         model = User

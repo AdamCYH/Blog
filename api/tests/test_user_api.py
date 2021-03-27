@@ -120,7 +120,7 @@ class UserTests(APITestCase):
 
     def test_updateUser_self_shouldUpdateUser(self):
         # Arrange
-        user1, user2 = tests_helper.create_fake_users()
+        user1, _ = tests_helper.create_fake_users()
         request_data = {"username": user1.username,
                         "email": "updated@gmail.com",
                         "first_name": user1.first_name,

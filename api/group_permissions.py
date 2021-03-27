@@ -57,4 +57,4 @@ class IsUserSelfOrAdmin(permissions.BasePermission):
             return True
         if obj.user_id:
             return obj.user_id == request.user.user_id
-        return obj.owner == request.user or request.user.is_staff
+        return obj.author == request.user or request.user.is_staff

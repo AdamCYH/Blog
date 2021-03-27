@@ -2,7 +2,6 @@ import uuid
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.urls import reverse
 
 from api.utils import get_video_upload_path, get_audio_upload_path, get_image_upload_path
 
@@ -16,9 +15,9 @@ class Group(models.Model):
 
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email', 'password']
+    # TODO(adam): Make sure the image path is accurate.
     profile_pic = models.ImageField(default='default_profile.jpeg')  # set up default pic
-    user_id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     groups = models.ManyToManyField(
         Group,
         blank=True,
@@ -27,9 +26,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-    def get_absolute_url(self):
-        return reverse('user', args=[str(self.id)])
 
     class Meta:
         db_table = 'user'
@@ -44,6 +40,7 @@ class UserGroup(models.Model):
 
 
 class Category(models.Model):
+    # TODO(adam): Make primary key id.
     name = models.CharField(primary_key=True, max_length=100)
     createdBy = models.ForeignKey(
         User,
@@ -60,11 +57,11 @@ class Category(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=500, null=True)
-    body = models.TextField()
+    body = models.TextField(null=True)
     video = models.FileField(upload_to=get_video_upload_path, null=True)
     audio = models.FileField(upload_to=get_audio_upload_path, null=True)
 
-    owner = models.ForeignKey(
+    author = models.ForeignKey(
         User,
         blank=False,
         null=False,
@@ -76,7 +73,8 @@ class Post(models.Model):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        related_name="posts")
+        related_name="posts"
+    )
 
     view = models.BigIntegerField(default=0)
     is_public = models.BooleanField(default=False)
@@ -98,7 +96,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to=get_image_upload_path)
     name = models.CharField(max_length=100)
     is_public = models.BooleanField(default=True)
-    owner = models.ForeignKey(
+    uploaded_by = models.ForeignKey(
         User,
         blank=False,
         null=False,
