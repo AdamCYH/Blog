@@ -46,6 +46,7 @@ Fields
 | user_id          | NO CHANGE        | NO CHANGE        |
 | profile_pic      | Optional         | Optional         |
 | username         | Required         | NO CHANGE        |
+| password         | Required         | Optional         |
 | email            | Required         | Optional         |
 | first_name       | Optional         | Optional         |
 | last_name        | Optional         | Optional         |
@@ -85,19 +86,19 @@ Fields
 
 
 
-* Create user
+* Create group
     * Endpoint: /api/group/
     * Request method: POST
-* List users
+* List groups
     * Endpoint: /api/group/
     * Request method: GET
-* Retrieve user
+* Retrieve group
     * Endpoint: /api/group/<name>
     * Request method: GET
-* Update user
+* Update group
     * Endpoint: /api/group/<name>
     * Request method: PUT
-* Delete user
+* Delete group
     * Endpoint: /api/group/<name>
     * Request method: DELETE
 
@@ -121,19 +122,19 @@ Fields
 | owner                | NO CHANGE           | NO CHANGE |
 | category             | Optional            | Optional  |
 
-* Create user
+* Create post
     * Endpoint: /api/post/
     * Request method: POST
-* List users
+* List posts
     * Endpoint: /api/post/
     * Request method: GET
-* Retrieve user
+* Retrieve post
     * Endpoint: /api/post/<id>
     * Request method: GET
-* Update user
+* Update post
     * Endpoint: /api/post/<id>
     * Request method: PUT
-* Delete user
+* Delete post
     * Endpoint: /api/post/<id>
     * Request method: DELETE
 * Parameters
@@ -154,18 +155,18 @@ Fields
 
 
 
-* Create user
+* Create category
     * Endpoint: /api/category/
     * Request method: POST
-* List users
+* List categories
     * Endpoint: /api/category/
     * Request method: GET
-* Retrieve user
+* Retrieve category
     * Endpoint: /api/category/<name>
     * Request method: GET
-* Update user
+* Update category
     * Endpoint: /api/category/<name>
     * Request method: PUT
-* Delete user
+* Delete category
     * Endpoint: /api/category/<name>
     * Request method: DELETE
