@@ -171,3 +171,7 @@ Endpoint: /api/post/
 * 删除分类
     * 端点: /api/category/<name>
     * 请求方式: DELETE
+* 可选参数
+    * parent=<类别名> - 获取所有子类别
+    * parent=root - 获取所有根类别
+  
