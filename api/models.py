@@ -46,6 +46,7 @@ class UserGroup(models.Model):
 
 class Category(models.Model):
     name = models.CharField(primary_key=True, max_length=100)
+    parent = models.ForeignKey('self', null=True, on_delete=models.SET_NULL, related_name="parent_category")
     createdBy = models.ForeignKey(
         User,
         blank=True,

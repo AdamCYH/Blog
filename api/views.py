@@ -135,14 +135,23 @@ class GroupViewSet(viewsets.ViewSet):
 
 
 class CategoryViewSet(viewsets.ViewSet):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
     def dispatch(self, request, *args, **kwargs):
         return super(CategoryViewSet, self).dispatch(request, *args, **kwargs)
 
+    def get_queryset(self):
+        queryset = Category.objects.all()
+        parent = self.request.query_params.get('parent', None)
+        if parent:
+            if parent == 'root':
+                queryset = queryset.filter(parent=None)
+            else:
+                queryset = queryset.filter(parent=parent)
+        return queryset
+
     def list(self, request):
-        serializer = self.serializer_class(self.queryset.all(), many=True)
+        serializer = self.serializer_class(self.get_queryset().all(), many=True)
         return Response(serializer.data)
 
     def create(self, request):
@@ -154,12 +163,12 @@ class CategoryViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
-        group = get_object_or_404(self.queryset.all(), pk=pk)
+        group = get_object_or_404(self.get_queryset().all(), pk=pk)
         serializer = self.serializer_class(group)
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        serializer = self.serializer_class(self.queryset.get(id=pk), data=request.data)
+        serializer = self.serializer_class(self.get_queryset().get(id=pk), data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         else:
@@ -168,7 +177,7 @@ class CategoryViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def destroy(self, request, pk=None):
-        group = get_object_or_404(self.queryset.all(), pk=pk)
+        group = get_object_or_404(self.get_queryset().all(), pk=pk)
         group.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
