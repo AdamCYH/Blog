@@ -170,3 +170,6 @@ Fields
 * Delete category
     * Endpoint: /api/category/<name>
     * Request method: DELETE
+* Parameters
+    * parent=<parent category name> - get child categories by parent
+    * parent=root - only root parents
