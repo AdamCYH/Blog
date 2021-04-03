@@ -146,7 +146,7 @@ Endpoint: /api/post/
   
   
 ###### 分类
-端点: /api/group/
+端点: /api/category/
 
 字段
 | 字段              | 创建             | 更新              |        |

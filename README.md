@@ -145,7 +145,7 @@ Fields
   
   
 ###### Category
-Endpoint: /api/group/
+Endpoint: /api/category/
 
 Fields
 | Field            | Create           | Update           |        |
