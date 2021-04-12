@@ -135,3 +135,11 @@ class Image(models.Model):
 
     class Meta:
         db_table = 'image'
+
+
+class PostUserView(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(Post, blank=False, null=False, on_delete=models.CASCADE, related_name='user_views')
+    user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='post_views')
+    start_time = models.DateTimeField(auto_now_add=True, editable=False)
+    end_time = models.DateTimeField(auto_now=True, editable=True)

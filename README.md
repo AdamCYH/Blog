@@ -145,7 +145,7 @@ Fields
   
   
 ###### Category
-Endpoint: /api/group/
+Endpoint: /api/category/
 
 Fields
 | Field            | Create           | Update           |        |
@@ -173,3 +173,29 @@ Fields
 * Parameters
     * parent=<parent category name> - get child categories by parent
     * parent=root - only root parents
+
+###### Post user view history
+端点: /api/post_user_view/
+
+When access a post that does not belong to user self，
+/api/post/ would return field <post_user_view>，which is the view id。
+Use this id to update the view time.
+
+
+* List view history
+    * Endpoint: /api/post_user_view/
+    * Request method: GET
+    * Default returns all logged in user's view history。
+    * Admin returns all view history。
+* Update view history
+    * Endpoint: /api/post_user_view/<post_user_view_id>
+    * Request method: PUT
+    * No need to provide any data, backend will update the last signal time.
+* Parameters
+    * post=<post id>
+        * Admin：Get all view history for this post.
+        * Others：If the post belongs to user self, return all history for this post. if not, return nothing.
+    * user=<用户ID>
+        * Admin：Get all view history of this user.
+        * Others：If user is self, return user's all view history. if not, return nothing.
+  

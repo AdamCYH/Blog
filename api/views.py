@@ -1,16 +1,17 @@
 import logging
 
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser, AllowAny, SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin
-from api.models import User, Post, Image, Group, Category
+from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin, IsUserSelf
+from api.models import User, Post, Image, Group, Category, PostUserView
 from api.serializers import GroupSerializer, PostSerializer, \
     TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer, \
-    CategorySerializer
+    CategorySerializer, PostUserViewSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -227,11 +228,20 @@ class PostViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         post = get_object_or_404(self.get_queryset().all(), pk=pk)
+        post_user_view = None
         if post.owner != self.request.user:
             post.view = post.view + 1
             post.save()
-        serializer = self.serializer_class(post)
-        return Response(serializer.data)
+            if not self.request.user.is_anonymous:
+                post_user_view = PostUserView.objects.create(post=post, user=self.request.user)
+
+        post_serializer = self.serializer_class(post)
+
+        data = {}
+        data.update(post_serializer.data)
+        if post_user_view:
+            data['post_user_view'] = post_user_view.id
+        return Response(data)
 
     def update(self, request, pk=None):
         serializer = self.serializer_class(self.get_queryset().get(id=pk), data=request.data)
@@ -309,6 +319,53 @@ class ImageViewSet(viewsets.ViewSet):
         Instantiates and returns the list of permissions that this view requires.
         """
         permission_classes = [IsUserSelfOrAdmin]
+
+        return [permission() for permission in permission_classes]
+
+
+class PostUserViewViewSet(viewsets.ViewSet):
+    serializer_class = PostUserViewSerializer
+
+    def dispatch(self, request, *args, **kwargs):
+        return super(PostUserViewViewSet, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = PostUserView.objects.all()
+        user = self.request.query_params.get('user', None)
+        post = self.request.query_params.get('post', None)
+        if user:
+            queryset = queryset.filter(user=user)
+        if post:
+            queryset = queryset.filter(post=post)
+        return queryset
+
+    def list(self, request):
+        queryset = self.get_queryset().all()
+        if request.user.is_staff or request.user.is_superuser:
+            pass
+        else:
+            queryset = queryset.filter(user=self.request.user)
+        serializer = self.serializer_class(queryset.order_by('-start_time')[:10], many=True)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        post_user_view = get_object_or_404(PostUserView.objects.all(), pk=pk)
+        self.check_object_permissions(request, post_user_view)
+
+        post_user_view.end_time = timezone.now()
+        post_user_view.save()
+
+        serializer = self.serializer_class(post_user_view)
+        return Response(serializer.data)
+
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.request.method in SAFE_METHODS:
+            permission_classes = [IsUserSelfOrAdmin]
+        else:
+            permission_classes = [IsUserSelf]
 
         return [permission() for permission in permission_classes]
 
