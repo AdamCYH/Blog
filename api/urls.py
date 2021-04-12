@@ -11,5 +11,5 @@ api_router.register(r'category', CategoryViewSet, basename='category')
 api_router.register(r'image', ImageViewSet)
 
 urlpatterns = [
-    path(r'post_read_signal', PostReadSignalView.as_view(), name='post_read_heart_beat'),
+    path('post_read_signal', PostReadSignalView.as_view(), name='post_read_heart_beat'),
 ]

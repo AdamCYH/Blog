@@ -335,7 +335,7 @@ class PostReadSignalView(APIView):
         post_user_view = get_object_or_404(PostUserView.objects.all(), pk=puv_id)
 
         if request.user == post_user_view.user:
-            post_user_view.last_read_time = timezone.now()
+            post_user_view.end_time = timezone.now()
             post_user_view.save()
             return Response()
         else:

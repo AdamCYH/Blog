@@ -142,4 +142,4 @@ class PostUserView(models.Model):
     post = models.ForeignKey(Post, blank=False, null=False, on_delete=models.CASCADE, related_name='user_views')
     user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='post_views')
     start_time = models.DateTimeField(auto_now_add=True, editable=False)
-    last_read_time = models.DateTimeField(auto_now=True, editable=True)
+    end_time = models.DateTimeField(auto_now=True, editable=True)
