@@ -175,20 +175,20 @@ Fields
     * parent=root - only root parents
 
 ###### Post user view history
-端点: /api/post_user_view/
+端点: /api/blog_visit_log/
 
-When access a post that does not belong to user self，
-/api/post/ would return field <post_user_view>，which is the view id。
-Use this id to update the view time.
+When access a blog that does not belong to user self，
+/api/post/ would return field <blog_visit_log>，which is the log id。
+Use this id to update the log time.
 
 
 * List view history
-    * Endpoint: /api/post_user_view/
+    * Endpoint: /api/blog_visit_log/
     * Request method: GET
     * Default returns all logged in user's view history。
     * Admin returns all view history。
 * Update view history
-    * Endpoint: /api/post_user_view/<post_user_view_id>
+    * Endpoint: /api/blog_visit_log/<blog_visit_log>
     * Request method: PUT
     * No need to provide any data, backend will update the last signal time.
 * Parameters
