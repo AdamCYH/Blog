@@ -1,13 +1,15 @@
 import logging
 
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAdminUser, AllowAny, SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin
-from api.models import User, Post, Image, Group, Category
+from api.models import User, Post, Image, Group, Category, PostUserView
 from api.serializers import GroupSerializer, PostSerializer, \
     TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer, \
     CategorySerializer
@@ -194,6 +196,8 @@ class CategoryViewSet(viewsets.ViewSet):
 class PostViewSet(viewsets.ViewSet):
     serializer_class = PostSerializer
 
+    # retrieve_serializer_class = PostRetrieveSerializer
+
     def dispatch(self, request, *args, **kwargs):
         return super(PostViewSet, self).dispatch(request, *args, **kwargs)
 
@@ -227,11 +231,21 @@ class PostViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         post = get_object_or_404(self.get_queryset().all(), pk=pk)
+        post_user_view = None
         if post.owner != self.request.user:
             post.view = post.view + 1
             post.save()
-        serializer = self.serializer_class(post)
-        return Response(serializer.data)
+
+            if not self.request.user.is_anonymous:
+                post_user_view = PostUserView.objects.create(post=post, user=self.request.user)
+
+        post_serializer = self.serializer_class(post)
+
+        data = {}
+        data.update(post_serializer.data)
+        if post_user_view:
+            data['post_user_view'] = post_user_view.id
+        return Response(data)
 
     def update(self, request, pk=None):
         serializer = self.serializer_class(self.get_queryset().get(id=pk), data=request.data)
@@ -311,6 +325,21 @@ class ImageViewSet(viewsets.ViewSet):
         permission_classes = [IsUserSelfOrAdmin]
 
         return [permission() for permission in permission_classes]
+
+
+class PostReadSignalView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        puv_id = self.request.query_params.get('post_user_view', None)
+        post_user_view = get_object_or_404(PostUserView.objects.all(), pk=puv_id)
+
+        if request.user == post_user_view.user:
+            post_user_view.last_read_time = timezone.now()
+            post_user_view.save()
+            return Response()
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 class TokenObtainPairPatchedView(TokenObtainPairView):
