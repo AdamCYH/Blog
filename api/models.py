@@ -137,7 +137,7 @@ class Image(models.Model):
         db_table = 'image'
 
 
-class PostUserView(models.Model):
+class BlogVisitLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, blank=False, null=False, on_delete=models.CASCADE, related_name='user_views')
     user = models.ForeignKey(User, blank=False, null=False, on_delete=models.CASCADE, related_name='post_views')

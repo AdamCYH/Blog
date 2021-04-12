@@ -177,19 +177,19 @@ Endpoint: /api/post/
   
   
 ###### 文章访问记录
-端点: /api/post_user_view/
+端点: /api/blog_visit_log/
 
-当用户访问不属于自己的文章时，/api/post/ 会返回<post_user_view>字段，
-这个字段为访问记录ID。请使用post_user_view来作为更新访问时间的ID。
+当用户访问不属于自己的文章时，/api/post/ 会返回<blog_visit_log>字段，
+这个字段为访问记录ID。请使用blog_visit_log来作为更新访问时间的ID。
 
 
 * 列举文章访问记录
-    * 端点: /api/post_user_view/
+    * 端点: /api/blog_visit_log/
     * 请求方式: GET
     * 默认返回所有自己的浏览记录。
     * 管理员返回所有浏览记录。
 * 更新文章访问记录
-    * 端点: /api/post_user_view/<post_user_view_id>
+    * 端点: /api/blog_visit_log/<blog_visit_log>
     * 请求方式: PUT
     * 不需要提供任何字段。后端自动更新最后阅读时间
 * 可选参数

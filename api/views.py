@@ -8,10 +8,10 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.group_permissions import IsOwnerOrReadOnly, IsUserSelfOrAdmin, IsUserSelf
-from api.models import User, Post, Image, Group, Category, PostUserView
+from api.models import User, Post, Image, Group, Category, BlogVisitLog
 from api.serializers import GroupSerializer, PostSerializer, \
     TokenObtainPairPatchedSerializer, UserSerializer, UserAdminSerializer, UserUpdateSerializer, ImageSerializer, \
-    CategorySerializer, PostUserViewSerializer
+    CategorySerializer, BlogVisitLogSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -228,19 +228,19 @@ class PostViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         post = get_object_or_404(self.get_queryset().all(), pk=pk)
-        post_user_view = None
+        blog_visit_log = None
         if post.owner != self.request.user:
             post.view = post.view + 1
             post.save()
             if not self.request.user.is_anonymous:
-                post_user_view = PostUserView.objects.create(post=post, user=self.request.user)
+                blog_visit_log = BlogVisitLog.objects.create(post=post, user=self.request.user)
 
         post_serializer = self.serializer_class(post)
 
         data = {}
         data.update(post_serializer.data)
-        if post_user_view:
-            data['post_user_view'] = post_user_view.id
+        if blog_visit_log:
+            data['blog_visit_log'] = blog_visit_log.id
         return Response(data)
 
     def update(self, request, pk=None):
@@ -323,14 +323,14 @@ class ImageViewSet(viewsets.ViewSet):
         return [permission() for permission in permission_classes]
 
 
-class PostUserViewViewSet(viewsets.ViewSet):
-    serializer_class = PostUserViewSerializer
+class BlogVisitLogViewSet(viewsets.ViewSet):
+    serializer_class = BlogVisitLogSerializer
 
     def dispatch(self, request, *args, **kwargs):
-        return super(PostUserViewViewSet, self).dispatch(request, *args, **kwargs)
+        return super(BlogVisitLogViewSet, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = PostUserView.objects.all()
+        queryset = BlogVisitLog.objects.all()
         user = self.request.query_params.get('user', None)
         post = self.request.query_params.get('post', None)
         if user:
@@ -349,13 +349,13 @@ class PostUserViewViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def update(self, request, pk=None):
-        post_user_view = get_object_or_404(PostUserView.objects.all(), pk=pk)
-        self.check_object_permissions(request, post_user_view)
+        blog_visit_log = get_object_or_404(BlogVisitLog.objects.all(), pk=pk)
+        self.check_object_permissions(request, blog_visit_log)
 
-        post_user_view.end_time = timezone.now()
-        post_user_view.save()
+        blog_visit_log.end_time = timezone.now()
+        blog_visit_log.save()
 
-        serializer = self.serializer_class(post_user_view)
+        serializer = self.serializer_class(blog_visit_log)
         return Response(serializer.data)
 
     def get_permissions(self):
