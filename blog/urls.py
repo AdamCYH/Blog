@@ -24,10 +24,9 @@ from blog import settings
 
 router = DefaultRouter()
 router.registry.extend(api.urls.api_router.registry)
-api_urls = router.urls + api.urls.urlpatterns
 
 urlpatterns = [
-                  path('api/', include(api_urls)),
+                  path('api/', include(router.urls)),
                   path('auth/', include('rest_framework.urls')),
                   path('auth/token/', TokenObtainPairPatchedView.as_view(), name='token_obtain_pair'),
                   path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
